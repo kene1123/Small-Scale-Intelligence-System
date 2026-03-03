@@ -1,4 +1,4 @@
-Customer Intelligence & Automated Reporting System
+##Customer Intelligence & Automated Reporting System
 Overview
 
 This project is an end-to-end customer intelligence system built to simulate a real-world retail analytics environment.
