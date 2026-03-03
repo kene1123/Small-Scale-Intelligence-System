@@ -1,4 +1,4 @@
-#Customer Intelligence & Automated Reporting System
+# Customer Intelligence & Automated Reporting System
 Overview
 
 This project is an end-to-end customer intelligence system built to simulate a real-world retail analytics environment.
@@ -9,7 +9,8 @@ The goal was simple:
 
 Automatically generate data, identify meaningful customer behavior, trigger targeted communication, and deliver business insights without manual intervention.
 
-What This Project Accomplishes
+# What This Project Accomplishes
+
 1. Database Design & Analytics Layer
 
 Designed a relational retail database (fact + dimension model)
@@ -96,26 +97,27 @@ It includes a Q&A visual, allowing the business owner to type natural business q
 
 "Show declining customers"
 
-"Compare this week to last week"
+"Which product had the most unit sold?"
 
 The system returns accurate, data-backed answers instantly.
 
 Weekly reports are delivered to the business stakeholder automatically.
 
-Architecture Overview
+# Architecture Overview
 
-Database → Cloud PostgreSQL
-Daily Data Script → GitHub Actions (scheduled)
+Database → Cloud PostgreSQL 
 Segmentation Scripts → GitHub Actions (weekly schedule)
 Power BI → Business Reporting Layer
 
 The system operates without manual intervention.
 
-Tech Stack
+# Tech Stack
 
-PostgreSQL (Cloud-hosted)
+psql + windows terminal
 
 Python
+
+PostgreSQL
 
 psycopg2
 
@@ -133,7 +135,7 @@ Business Reporting	Weekly	Power BI
 
 All credentials are managed securely using GitHub repository secrets.
 
-Why This Project Matters
+# Why This Project Matters
 
 This project demonstrates:
 
@@ -155,7 +157,7 @@ CI/CD workflow orchestration
 
 It simulates how a small-to-medium retail business could automate insights, customer engagement, and operational reporting using modern data tooling.
 
-Future Enhancements
+# Future Enhancements
 
 Campaign performance tracking.
 
