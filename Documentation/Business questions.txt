@@ -1,0 +1,15 @@
+Who are our top 5 customers?
+
+Who is our top sales rep?
+
+Which sales rep has the lowest performance?
+
+Who are the customers with declining revenue?
+
+Five products with lowest demand?
+
+Five products with highest demand?
+
+State with highest revenue?
+
+State with lowest revenue?
