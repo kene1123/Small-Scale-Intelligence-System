@@ -28,4 +28,5 @@ jobs:
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        run: python run: python "Python/Data Entry-Update Automation/Cloud/CloudDB-DataEntry-Update.py"
+       
+run: Python/Data_Entry_Update_Automation/cloud/CloudDB-DataEntry-Update.py
