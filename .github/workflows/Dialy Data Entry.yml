@@ -2,7 +2,7 @@ name: Daily Data Load
 
 on:
   schedule:
-    - cron: '0 5 * * *'   # Runs daily at 05:00 UTC
+    - cron: '0 5 * * *'
   workflow_dispatch:
 
 jobs:
@@ -28,5 +28,4 @@ jobs:
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-       
-run: Python/Data_Entry_Update_Automation/Cloud/CloudDB-DataEntry-Update.py
+        run: python Python/Data_Entry_Update_Automation/Cloud/CloudDB-DataEntry-Update.py
