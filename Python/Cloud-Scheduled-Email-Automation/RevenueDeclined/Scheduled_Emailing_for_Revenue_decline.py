@@ -42,7 +42,7 @@ WITH latest_week AS (
 
 SELECT
     customer_name,
-    email, year, week,
+    email, t.year, week,
     SUM(revenue) AS revenue,
     SUM(prev_week_revenue) AS prev_rev
 FROM vw_weekly_customer_trend t
