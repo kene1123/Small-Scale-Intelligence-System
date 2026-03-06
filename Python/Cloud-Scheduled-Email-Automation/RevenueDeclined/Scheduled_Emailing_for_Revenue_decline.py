@@ -42,14 +42,14 @@ WITH latest_week AS (
 
 SELECT
     customer_name,
-    email,
-    SUM(revenue) AS current_week_revenue,
-    SUM(prev_week_revenue) AS previous_week_revenue
+    email, year, week
+    SUM(revenue) AS revenue,
+    SUM(prev_week_revenue) AS prev_rev
 FROM vw_weekly_customer_trend t
 JOIN latest_week lw
 ON t.year = lw.year
 AND t.week = lw.week
-GROUP BY customer_name, email
+GROUP BY customer_name, email, year, week
 HAVING SUM(revenue) < SUM(prev_week_revenue)
 """)
 
