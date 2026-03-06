@@ -49,7 +49,7 @@ FROM vw_weekly_customer_trend t
 JOIN latest_week lw
 ON t.year = lw.year
 AND t.week = lw.week
-GROUP BY customer_name, email, year, week
+GROUP BY customer_name, email, t.year, t.week
 HAVING SUM(revenue) < SUM(prev_week_revenue)
 """)
 
