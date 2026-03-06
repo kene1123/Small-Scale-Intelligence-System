@@ -34,23 +34,23 @@ SENDER_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
 cursor.execute("""
 WITH latest_week AS (
-    SELECT MAX(year) AS max_year,
-           MAX(week) AS max_week
-    FROM public.vw_weekly_customer_trend
+    SELECT year, week
+    FROM vw_weekly_customer_trend
+    ORDER BY year DESC, week DESC
+    LIMIT 1
 )
+
 SELECT
-    t.customer_name,
-    t.email,
-    t.year,
-    t.week,
-    SUM(t.revenue) AS current_week_revenue,
-    SUM(t.prev_week_revenue) AS previous_week_revenue
-FROM public.vw_weekly_customer_trend t
+    customer_name,
+    email,
+    SUM(revenue) AS current_week_revenue,
+    SUM(prev_week_revenue) AS previous_week_revenue
+FROM vw_weekly_customer_trend t
 JOIN latest_week lw
-  ON t.year = lw.max_year
- AND t.week = lw.max_week
-GROUP BY t.customer_name, t.email, t.year, t.week
-HAVING SUM(t.revenue) < SUM(t.prev_week_revenue)
+ON t.year = lw.year
+AND t.week = lw.week
+GROUP BY customer_name, email
+HAVING SUM(revenue) < SUM(prev_week_revenue)
 """)
 
 customers = cursor.fetchall()
