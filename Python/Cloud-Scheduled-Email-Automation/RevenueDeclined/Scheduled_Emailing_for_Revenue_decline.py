@@ -1,16 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
-
-
 import psycopg2
 import smtplib
 from email.mime.text import MIMEText
-
-# DATABASE CONNECTION 
-
 import os
+
+# DATABASE CONNECTION
 
 conn = psycopg2.connect(
     host=os.getenv("DB_HOST"),
@@ -30,7 +26,7 @@ SMTP_PORT = 587
 SENDER_EMAIL = os.getenv("EMAIL_ADDRESS")
 SENDER_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
-# GET DECLINING CUSTOMERS
+# GET DECLINING CUSTOMERS FROM LATEST WEEK
 
 cursor.execute("""
 WITH latest_week AS (
@@ -41,60 +37,72 @@ WITH latest_week AS (
 )
 
 SELECT
-    customer_name,
-    t.email, t.year, t.week,
-    SUM(revenue) AS revenue,
-    SUM(prev_week_revenue) AS prev_rev
+    t.customer_name,
+    t.email,
+    t.year,
+    t.week,
+    SUM(t.revenue) AS revenue,
+    SUM(t.prev_week_revenue) AS prev_rev
 FROM vw_weekly_customer_trend t
 JOIN latest_week lw
 ON t.year = lw.year
 AND t.week = lw.week
-GROUP BY customer_name, t.email, t.year, t.week
-HAVING SUM(revenue) < SUM(prev_week_revenue)
+GROUP BY t.customer_name, t.email, t.year, t.week
+HAVING SUM(t.revenue) < SUM(t.prev_week_revenue)
 """)
 
 customers = cursor.fetchall()
 
+print(f"Declining customers found: {len(customers)}")
+
+if not customers:
+    cursor.close()
+    conn.close()
+    print("No declining customers this week.")
+    exit()
+
+# OPEN EMAIL CONNECTION ONCE
+
+server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+server.starttls()
+server.login(SENDER_EMAIL, SENDER_PASSWORD)
+
 for name, email, year, week, revenue, prev_rev in customers:
 
-    subject = "We Miss You — How Can we Help?"
+    subject = "We Miss You — How Can We Help?"
 
-# CHECK DUPLICATE 
+    # CHECK IF EMAIL WAS ALREADY SENT THIS WEEK
 
     cursor.execute("""
-        SELECT COUNT(*)
+        SELECT 1
         FROM email_log
         WHERE customer_email = %s
-          AND email_type = 'DECLINING'
-          AND year = %s
-          AND week = %s
+        AND email_type = 'DECLINING'
+        AND year = %s
+        AND week = %s
+        AND status = 'SENT'
+        LIMIT 1
     """, (email, year, week))
 
-    already_sent = cursor.fetchone()[0]
+    already_sent = cursor.fetchone()
 
     if already_sent:
-        print(f"Skipped duplicate for {email}")
-        cursor.execute("""
-            INSERT INTO public.email_log
-            (customer_name, customer_email, email_type, subject, year, week, status)
-            VALUES (%s, %s, 'DECLINING', %s, %s, %s, 'SKIPPED')
-        """, (name, email, subject, year, week))
-        conn.commit()
+        print(f"Already sent this week → {email}")
         continue
 
-# EMAIL BODY
+    # EMAIL BODY
 
     body = f"""
-    Hello {name},
+Hello {name},
 
-    We've noticed your activity has declined recently.
+We've noticed your activity has declined recently.
 
-    Your Previous week revenue: ${prev_rev:,.2f}
-    Your Current week revenue: ${revenue:,.2f}
+Previous week revenue: ${prev_rev:,.2f}
+Current week revenue: ${revenue:,.2f}
 
-    We'd love to hear from you.
-    If there’s anything we can improve, please let us know.
-    """
+We’d love to hear from you.
+If there’s anything we can improve, please let us know.
+"""
 
     msg = MIMEText(body)
     msg["Subject"] = subject
@@ -102,35 +110,25 @@ for name, email, year, week, revenue, prev_rev in customers:
     msg["To"] = email
 
     try:
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-        server.starttls()
-        server.login(SENDER_EMAIL, SENDER_PASSWORD)
         server.sendmail(SENDER_EMAIL, email, msg.as_string())
-        server.quit()
-
         status = "SENT"
-        print(f"Email sent to {email}")
+        print(f"Email sent → {email}")
 
     except Exception as e:
         status = "FAILED"
-        print(f"Failed for {email}: {e}")
+        print(f"Failed → {email}: {e}")
 
-# LOG RESULT
+    # LOG RESULT
 
     cursor.execute("""
-        INSERT INTO public.email_log
+        INSERT INTO email_log
         (customer_name, customer_email, email_type, subject, year, week, status)
         VALUES (%s, %s, 'DECLINING', %s, %s, %s, %s)
     """, (name, email, subject, year, week, status))
 
     conn.commit()
 
+server.quit()
+
 cursor.close()
 conn.close()
-
-
-# In[ ]:
-
-
-
-
