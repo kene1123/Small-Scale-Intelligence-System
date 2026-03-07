@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[5]:
-
-
 import psycopg2
 import smtplib
 from email.mime.text import MIMEText
@@ -49,7 +46,7 @@ FROM public.vw_weekly_customer_sales s
 JOIN latest_week lw
   ON s.year = lw.year
  AND s.week = lw.week
-WHERE s.revenue >= 20000
+WHERE s.revenue >= 15000
 """)
 
 customers = cursor.fetchall()
@@ -58,26 +55,22 @@ for name, email, year, week, revenue in customers:
 
     subject = "Thank You for Being a Top Customer!"
 
-    # ---------- CHECK DUPLICATE ----------
+    # ---------- CHECK DUPLICATE (ONLY SKIP IF ALREADY SENT) ----------
     cursor.execute("""
-        SELECT COUNT(*)
+        SELECT 1
         FROM email_log
         WHERE customer_email = %s
           AND email_type = 'TOP_CUSTOMER'
           AND year = %s
           AND week = %s
+          AND status = 'SENT'
+        LIMIT 1
     """, (email, year, week))
 
-    already_sent = cursor.fetchone()[0]
+    already_sent = cursor.fetchone()
 
     if already_sent:
-        print(f"Skipped duplicate for {email}")
-        cursor.execute("""
-            INSERT INTO public.email_log
-            (customer_name, customer_email, email_type, subject, year, week, status)
-            VALUES (%s, %s, 'TOP_CUSTOMER', %s, %s, %s, 'SKIPPED')
-        """, (name, email, subject, year, week))
-        conn.commit()
+        print(f"Already sent this week → {email}")
         continue
 
     # ---------- EMAIL BODY ----------
@@ -123,10 +116,3 @@ for name, email, year, week, revenue in customers:
 
 cursor.close()
 conn.close()
-
-
-# In[ ]:
-
-
-
-
